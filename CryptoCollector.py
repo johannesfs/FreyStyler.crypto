@@ -6,18 +6,19 @@ import json
 data_dir = "./data"
 url_base = "https://api.kraken.com/0/public/"
 timeframes = {"minute": 1, "hour": 60, "day": 1440}
+currencies = ["ADA", "BTC", "ETH", "ALGO", "STORJ", "ANKR", "MANA", "CELO", "ENJ", "ZRX", "SKL", "OGN", "BNT"]
 
 def fetch_data(**kwargs):
     """More generic function"""
 
-    symbol = kwargs.get('symbol', "BTC/USD")
+    symbol = kwargs.get('symbol', "BTC")
     data_type = kwargs.get('data_type', "OHLC") # OHLC, Spread, Trades
     timeframe = kwargs.get('timeframe', "day")
 
-    pair_split = symbol.split('/')  # symbol must be in format XXX/XXX ie. BTC/USD
-    symbol = pair_split[0] + pair_split[1]
+    print(f"Collection {symbol} data from Kraken")
+    symbol = symbol.upper() + "USD"
     if data_type == "OHLC":
-        url = f'{url_base}/OHLC?pair={symbol}&interval={timeframe}'
+        url = f'{url_base}/OHLC?pair={symbol}&interval={timeframes[timeframe]}'
     else:
         url = f'{url_base}/{data_type}?pair={symbol}'
 
@@ -28,6 +29,22 @@ def fetch_data(**kwargs):
         keys = []
         for item in result:
             keys.append(item)
+        if keys[0] != 'last':
+            data = pd.DataFrame(result[keys[0]],
+                                columns=['unix', 'open', 'high', 'low', 'close', 'vwap', 'volume', 'tradecount'])
+        else:
+            data = pd.DataFrame(result[keys[1]],
+                                columns=['unix', 'open', 'high', 'low', 'close', 'vwap', 'volume', 'tradecount'])
+
+        data['date'] = pd.to_datetime(data['unix'], unit='s')
+        data['volume_from'] = data['volume'].astype(float) * data['close'].astype(float)
+
+        if data is None:
+            print("Did not return any data from Kraken for this symbol")
+        else:
+            data.to_csv(f'{data_dir}/Kraken_{symbol}_{timeframe}.csv', index=False)
+    else:
+        print("Did not receieve OK response from Kraken API")
 
 def fetch_OHLC_data(symbol, timeframe):
     """This function will get Open/High/Low/Close, Volume and tradecount data for the pair passed and save to CSV"""
@@ -131,13 +148,16 @@ def fetch_PRINTS_data(symbol):
 
 if __name__ == "__main__":
     # we set which pair we want to retrieve data for
-    pair = "ALGO/USD"
+    for pair in currencies:
+        fetch_data(symbol=pair)
+
+    #pair = "ALGO/USD"
     # full timeframe intervals found here: https://www.kraken.com/en-us/features/api#get-ohlc-data
     #fetch_OHLC_data(symbol=pair, timeframe='1') # fetches minute data
     # fetch_OHLC_data(symbol=pair, timeframe='60')  # fetches hourly data
-    fetch_OHLC_data(symbol=pair, timeframe='1440')  # fetches daily data
-    fetch_SPREAD_data(symbol=pair) # gets bid/ask spread data
-    fetch_PRINTS_data(symbol=pair) # gets historical trade print data
+    #fetch_OHLC_data(symbol=pair, timeframe='1440')  # fetches daily data
+    #fetch_SPREAD_data(symbol=pair) # gets bid/ask spread data
+    #fetch_PRINTS_data(symbol=pair) # gets historical trade print data
 
 
                  

@@ -4,3 +4,4 @@ notebooks/.ipynb_checkpoints
 notebooks/.~lock.test.csv#
 notebooks/test.csv
 .DS_Store
+notebooks/data/*

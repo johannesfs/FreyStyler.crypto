@@ -1,6 +1,7 @@
 import pandas as pd
 import pickle as pkl
 import numpy as np
+import os
 
 
 data_dir = "./data"
@@ -8,6 +9,7 @@ markets = ["Kraken"]
 fx_pairs = ["BTCUSD", "ETHUSD"]
 
 def main(**kwargs):
+
 	for mkt in markets:
 		for pair in fx_pairs:
 			df = pd.read_csv(f"{data_dir}/{mkt}_{pair}_day.csv")
@@ -18,7 +20,7 @@ def main(**kwargs):
 			df.returns.fillna(1, inplace=True)
 			df["log_returns"] = np.log(df["returns"])
 			
-			with open(f"notebooks/{mkt}_{pair}.pkl", "wb") as file:
+			with open(f"notebooks/data/{mkt}_{pair}.pkl", "wb") as file:
 				pkl.dump(df, file)
 			
 

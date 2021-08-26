@@ -6,7 +6,7 @@ import json
 data_dir = "./data"
 url_base = "https://api.kraken.com/0/public/"
 timeframes = {"minute": 1, "hour": 60, "day": 1440}
-currencies = ["ADA", "BTC", "ETH", "ALGO", "STORJ", "ANKR", "MANA", "CELO", "ENJ", "ZRX", "SKL", "OGN", "BNT"]
+currencies = ["ADA", "BTC", "ETH", "ALGO", "STORJ", "ANKR", "MANA", "ENJ", "ZRX", "SKL", "OGN", "BNT"]
 
 def fetch_data(**kwargs):
     """More generic function"""

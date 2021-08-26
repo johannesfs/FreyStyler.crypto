@@ -1,1 +1,3 @@
 data/*
+notebooks/*pkl
+notebooks/.ipynb_checkpoints

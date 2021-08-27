@@ -6,7 +6,7 @@ import os
 
 data_dir = "./data"
 markets = ["Kraken"]
-fx_pairs = ["BTCUSD", "ETHUSD"]
+fx_pairs = ["BTCUSD", "ETHUSD", "ALGOUSD", "STORJUSD", "MANAUSD"]
 
 def main(**kwargs):
 

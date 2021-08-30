@@ -6,7 +6,15 @@ import json
 data_dir = "./data"
 url_base = "https://api.kraken.com/0/public/"
 timeframes = {"minute": 1, "hour": 60, "day": 1440}
-currencies = ["BTC", "ETH", "ALGO", "STORJ", "MANA"]
+currencies = ["BTC","ETH","ADA","USDT","XRP","DOGE","USDC","DOT","SOL","UNI",
+"BCH","LTC","LINK","WBTC","MATIC","XLM","ETC","FIL","TRX","DAI","XMR",
+"AAVE","EOS","AXS","GRT","ATOM","XTZ","MKR","ALGO","WAVES",
+"DASH","KSM","COMP","CHZ","ZEC","MANA","ENJ","SUSHI",
+"SNX","YFI","FLOW","BAT","QTUM","SC","BNT","PERP","ZRX","ICX","CRV","OMG","NANO",
+"ANKR","LRC","KAVA","SAND","MINA","REN","1INCH","LSK",
+"OCEAN","GNO","STORJ","LPT","INJ","OGN","KNC","PAXG",
+"SRM","EWT","BAND","REP","REPV2","CTSI","MIR","OXT","KEEP","MLN","BADGER","ANT",
+"BAL","GHST","CQT","KAR","TBTC", "RARI"]
 
 def fetch_data(**kwargs):
     """Kraken - More generic function"""

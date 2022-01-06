@@ -26,8 +26,8 @@ DROP TABLE IF EXISTS `Crypto`.`CryptoCurrencyPair` ;
 CREATE TABLE IF NOT EXISTS `Crypto`.`CryptoCurrencyPair` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
-  `quotecurrency` VARCHAR(5) NOT NULL,
-  `basecurrency` VARCHAR(5) NOT NULL,
+  `quotecurrency` VARCHAR(8) NOT NULL,
+  `basecurrency` VARCHAR(8) NOT NULL,
   `description` TEXT(128) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;

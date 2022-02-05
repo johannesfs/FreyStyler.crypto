@@ -2,8 +2,9 @@
 import pandas as pd
 import requests
 import json
+import os
 
-data_dir = "./data"
+data_dir = "/tmp/crypto_data"
 url_base = "https://api.kraken.com/0/public/"
 timeframes = {"minute": 1, "hour": 60, "day": 1440}
 currencies = ["BTC","ETH","ADA","USDT","XRP","DOGE","USDC","DOT","SOL","UNI",
@@ -16,7 +17,7 @@ currencies = ["BTC","ETH","ADA","USDT","XRP","DOGE","USDC","DOT","SOL","UNI",
 "SRM","EWT","BAND","REP","REPV2","CTSI","MIR","OXT","KEEP","MLN","BADGER","ANT",
 "BAL","GHST","CQT","KAR","TBTC", "RARI"]
 
-def fetch_data(**kwargs):
+def main(**kwargs):
     """Kraken - More generic function"""
 
     symbol = kwargs.get('symbol', "BTC")
@@ -50,6 +51,7 @@ def fetch_data(**kwargs):
         if data is None:
             print("Did not return any data from Kraken for this symbol")
         else:
+            os.makedirs(data_dir, mode=0o777, exist_ok=True)
             data.to_csv(f'{data_dir}/Kraken_{symbol}_{timeframe}.csv', index=False)
     else:
         print("Did not receieve OK response from Kraken API")
@@ -178,7 +180,7 @@ def fetch_daily_data(symbol):
 if __name__ == "__main__":
     # we set which pair we want to retrieve data for
     for pair in currencies:
-        fetch_data(symbol=pair)
+        main(symbol=pair)
 
     #pair = "ALGO/USD"
     # full timeframe intervals found here: https://www.kraken.com/en-us/features/api#get-ohlc-data

@@ -3,28 +3,38 @@ import pandas as pd
 import requests
 import json
 import os
+import logging
 
 data_dir = "/tmp/crypto_data"
 url_base = "https://api.kraken.com/0/public/"
 timeframes = {"minute": 1, "hour": 60, "day": 1440}
-currencies = ["BTC","ETH","ADA","USDT","XRP","DOGE","USDC","DOT","SOL","UNI",
-"BCH","LTC","LINK","WBTC","MATIC","XLM","ETC","FIL","TRX","DAI","XMR",
-"AAVE","EOS","AXS","GRT","ATOM","XTZ","MKR","ALGO","WAVES",
+currencies = {"crypto":[
+    "BTC","ETH","ADA","USDT","XRP","DOGE","USDC","DOT","SOL","UNI",
+"BCH","LTC","LINK","WBTC","MATIC","XLM","ETC","FIL","TRX","DAI","XMR", "AKT",
+"AAVE","EOS","AXS","GRT","ATOM","XTZ","MKR","ALGO","WAVES", "SDN",
 "DASH","KSM","COMP","CHZ","ZEC","MANA","ENJ","SUSHI",
 "SNX","YFI","FLOW","BAT","QTUM","SC","BNT","PERP","ZRX","ICX","CRV","OMG","NANO",
 "ANKR","LRC","KAVA","SAND","MINA","REN","1INCH","LSK",
 "OCEAN","GNO","STORJ","LPT","INJ","OGN","KNC","PAXG",
 "SRM","EWT","BAND","REP","REPV2","CTSI","MIR","OXT","KEEP","MLN","BADGER","ANT",
-"BAL","GHST","CQT","KAR","TBTC", "RARI"]
+"BAL","GHST","CQT","KAR","TBTC", "RARI"],
+"fiat":
+    ["USD","JPY","BGN","CYP","CZK","DKK","EEK","GBP","HUF","LTL",
+"LVL","MTL","PLN","ROL","RON","SEK","SIT","SKK","CHF","ISK","NOK","HRK","RUB",
+"TRL","TRY","AUD","BRL","CAD","CNY","HKD","IDR","ILS","INR","KRW","MXN","MYR",
+"NZD","PHP","SGD","THB","ZAR"]}
 
 def main(**kwargs):
     """Kraken - More generic function"""
+
+    FORMAT = '%(asctime)s [%(levelname)s]: %(message)s'
+    logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
     symbol = kwargs.get('symbol', "BTC")
     data_type = kwargs.get('data_type', "OHLC") # OHLC, Spread, Trades
     timeframe = kwargs.get('timeframe', "day")
 
-    print(f"Collection {symbol} data from Kraken")
+    logging.info(f"Collection {symbol} data from Kraken")
     symbol = symbol.upper() + "USD"
     if data_type == "OHLC":
         url = f'{url_base}/OHLC?pair={symbol}&interval={timeframes[timeframe]}'
@@ -49,12 +59,12 @@ def main(**kwargs):
         data['volume_from'] = data['volume'].astype(float) * data['close'].astype(float)
 
         if data is None:
-            print("Did not return any data from Kraken for this symbol")
+            logging.warning("Did not return any data from Kraken for this symbol")
         else:
             os.makedirs(data_dir, mode=0o777, exist_ok=True)
             data.to_csv(f'{data_dir}/Kraken_{symbol}_{timeframe}.csv', index=False)
     else:
-        print("Did not receieve OK response from Kraken API")
+        logging.critical("Did not receieve OK response from Kraken API")
 
 def fetch_OHLC_data(symbol, timeframe):
     """This function will get Open/High/Low/Close, Volume and tradecount data for the pair passed and save to CSV"""
@@ -62,6 +72,7 @@ def fetch_OHLC_data(symbol, timeframe):
     symbol = pair_split[0] + pair_split[1]
     url = f'{url_base}/OHLC?pair={symbol}&interval={timeframe}'
     response = requests.get(url)
+
     if response.status_code == 200:  # check to make sure the response from server is good
         j = json.loads(response.text)
         result = j['result']
@@ -80,7 +91,7 @@ def fetch_OHLC_data(symbol, timeframe):
 
         # if we failed to get any data, print an error...otherwise write the file
         if data is None:
-            print("Did not return any data from Kraken for this symbol")
+            logging.warning("Did not return any data from Kraken for this symbol")
         else:
             if timeframe == '1':
                 tf = 'minute'
@@ -92,7 +103,7 @@ def fetch_OHLC_data(symbol, timeframe):
                 tf = ''
             data.to_csv(f'{data_dir}/Kraken_{symbol}_{tf}.csv', index=False)
     else:
-        print("Did not receieve OK response from Kraken API")
+        logging.critical("Did not receieve OK response from Kraken API")
 
 def fetch_SPREAD_data(symbol):
     """This function will return the nearest bid/ask and calculate the spread for the symbol passed and save
@@ -101,6 +112,7 @@ def fetch_SPREAD_data(symbol):
     symbol = pair_split[0] + pair_split[1]
     url = f'{url_base}/Spread?pair={symbol}'
     response = requests.get(url)
+
     if response.status_code == 200:  # check to make sure the response from server is good
         j = json.loads(response.text)
         result = j['result']
@@ -117,11 +129,11 @@ def fetch_SPREAD_data(symbol):
 
         # if we failed to get any data, print an error...otherwise write the file
         if data is None:
-            print("Did not return any data from Kraken for this symbol")
+            logging.warning("Did not return any data from Kraken for this symbol")
         else:
             data.to_csv(f'{data_dir}/Kraken_{symbol}_spreads.csv', index=False)
     else:
-        print("Did not receieve OK response from Kraken API")
+        logging.critical("Did not receieve OK response from Kraken API")
 
 def fetch_PRINTS_data(symbol):
     """This function will return historical trade prints for the symbol passed and save the results to a CSV file"""
@@ -149,11 +161,11 @@ def fetch_PRINTS_data(symbol):
 
         # if we failed to get any data, print an error...otherwise write the file
         if data is None:
-            print("Did not return any data from Kraken for this symbol")
+            logging.warning("Did not return any data from Kraken for this symbol")
         else:
             data.to_csv(f'{data_dir}/Kraken_{symbol}_tradeprints.csv', index=False)
     else:
-        print("Did not receieve OK response from Kraken API")
+        logging.critical("Did not receieve OK response from Kraken API")
 
 def fetch_daily_data(symbol):
     """Coinbase"""
@@ -169,17 +181,17 @@ def fetch_daily_data(symbol):
 
         # if we failed to get any data, print an error...otherwise write the file
         if data is None:
-            print("Did not return any data from Coinbase for this symbol")
+            logging.warning("Did not return any data from Coinbase for this symbol")
         else:
             data.to_csv(f'Coinbase_{pair_split[0] + pair_split[1]}_dailydata.csv', index=False)
 
     else:
-        print("Did not receieve OK response from Coinbase API")
+        logging.critical("Did not receieve OK response from Coinbase API")
 
 
 if __name__ == "__main__":
     # we set which pair we want to retrieve data for
-    for pair in currencies:
+    for pair in currencies["crypto"]:
         main(symbol=pair)
 
     #pair = "ALGO/USD"

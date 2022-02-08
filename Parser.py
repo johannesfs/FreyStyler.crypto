@@ -2,7 +2,7 @@ import pandas as pd
 import pickle as pkl
 import numpy as np
 import re
-
+import logging
 from os import listdir
 from os.path import isfile, join
 
@@ -12,13 +12,18 @@ fx_pairs = ["BTCUSD", "ETHUSD", "ALGOUSD", "STORJUSD", "MANAUSD"]
 
 def main(**kwargs):
 
+	FORMAT = "%(asctime)s %(clientip)-15s %(user)-8s %(message)s"
+	logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+
 	pairs = []
-	onlyfiles = [f for f in listdir(data_dir) if isfile(join(data_dir, f))]
-	for price_file in onlyfiles:
+	price_files = [f for f in listdir(data_dir) if isfile(join(data_dir, f))]
+
+	for price_file in price_files:
 
 		df = pd.read_csv(f"{data_dir}/{price_file}")
 		pair = re.split(r'_', price_file)[1]
-		print(pair)
+		logging.info(pair)
+
 		pairs.append(pair[:-3])
 		df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
 		df.set_index("date", inplace=True)

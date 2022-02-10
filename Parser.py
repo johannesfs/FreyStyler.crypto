@@ -38,7 +38,8 @@ def main(**kwargs):
 	with open(f"notebooks/data/pairs.pkl", "wb") as pairs_file:
 		pkl.dump(pairs, pairs_file)
 
-			
+def create_cross_rates():
+	pass		
 
 if __name__ == '__main__':
 	main()

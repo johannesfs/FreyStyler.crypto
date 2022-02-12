@@ -39,5 +39,5 @@ class QuoteHistory(Base):
 
 if __name__ == '__main__':
 	print(CryptoCurrencyPair.__table__)
-	QuoteMap.__table__
+	#QuoteMap.__table__
 

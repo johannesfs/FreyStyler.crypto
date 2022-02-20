@@ -3,7 +3,7 @@ from sqlalchemy.orm import declarative_base, Session
 
 import pyodbc
 
-engine = create_engine("mysql+pyodbc://freystyler:freestyle@localhost/Crypto?charset=utf8mb4")
+engine = create_engine("mysql+pymysql://freystyler:freestyle@localhost/Crypto?charset=utf8mb4")
 
 Base = declarative_base()
 
@@ -53,12 +53,11 @@ class Currency(Base):
 	def __repr__(self):
 		return "<CurrencyPair(name='%s', pair='%s/%s')>" % (self.name, self.quotecurrency, self.basecurrency)
 
-
-
 if __name__ == '__main__':
 	print(CurrencyPair)
 	#QuoteMap.__table__
 	t = Currency(name="Swedish krona", currencycode="SEK", currencytype="fiat")
+	
 	# create session and add objects
 	with Session(engine) as session:
 		session.add(t)

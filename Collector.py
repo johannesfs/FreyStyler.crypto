@@ -5,6 +5,7 @@ import json
 import os
 import logging
 import urllib
+from zipfile import ZipFile
 
 #unix,open,high,low,close,vwap,volume,tradecount,date,volume_from
 
@@ -27,6 +28,9 @@ currencies = {"crypto":[
 "TRL","TRY","AUD","BRL","CAD","CNY","HKD","IDR","ILS","INR","KRW","MXN","MYR",
 "NZD","PHP","SGD","THB","ZAR"]}
 
+def create_data_dir():
+    os.makedirs(data_dir, mode=0o777, exist_ok=True)    
+    
 def get_web_data(url):
     response = requests.get(url)
     if response.status_code == 200:  # check to make sure the response from server is good
@@ -44,7 +48,26 @@ def get_web_data(url):
 
         data['date'] = pd.to_datetime(data['unix'], unit='s')
         data['volume_from'] = data['volume'].astype(float) * data['close'].astype(float)
+        
+        if data is not None:
+            create_data_dir()
+            data.to_csv(f'{data_dir}/kraken_{symbol}_{timeframe}.csv', index=False)
 
+def fetch_ECB_data():
+    """"""
+
+    url = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.zip"
+    create_data_dir()
+    with open(f"{data_dir}/ecb_eurofxref.zip", 'wb') as out_file:
+        content = requests.get(url, stream=True).content
+        out_file.write(content)
+        logging.info("Downloaded and stored the fx cross rates.")
+    
+
+    with ZipFile(f"{data_dir}/ecb_eurofxref.zip", 'r') as zipObj:
+        # Extract all the contents of zip file in current directory
+        zipObj.extractall(data_dir)
+        logging.info(f"Extracted ECB cross rates to {data_dir}")
 
 def main(**kwargs):
     """Kraken - More generic function"""
@@ -63,6 +86,8 @@ def main(**kwargs):
     else:
         url = f'{url_base}/{data_type}?pair={symbol}'
 
+    fetch_ECB_data()
+
     response = requests.get(url)
     if response.status_code == 200:  # check to make sure the response from server is good
         j = json.loads(response.text)
@@ -71,11 +96,9 @@ def main(**kwargs):
         for item in result:
             keys.append(item)
         if keys[0] != 'last':
-            data = pd.DataFrame(result[keys[0]],
-                                columns=['unix', 'open', 'high', 'low', 'close', 'vwap', 'volume', 'tradecount'])
+            data = pd.DataFrame(result[keys[0]], columns=['unix', 'open', 'high', 'low', 'close', 'vwap', 'volume', 'tradecount'])
         else:
-            data = pd.DataFrame(result[keys[1]],
-                                columns=['unix', 'open', 'high', 'low', 'close', 'vwap', 'volume', 'tradecount'])
+            data = pd.DataFrame(result[keys[1]], columns=['unix', 'open', 'high', 'low', 'close', 'vwap', 'volume', 'tradecount'])
 
         data['date'] = pd.to_datetime(data['unix'], unit='s')
         data['volume_from'] = data['volume'].astype(float) * data['close'].astype(float)
@@ -83,8 +106,17 @@ def main(**kwargs):
         if data is None:
             logging.warning("Did not return any data from Kraken for this symbol")
         else:
-            os.makedirs(data_dir, mode=0o777, exist_ok=True)
-            data.to_csv(f'{data_dir}/kraken_{symbol}_{timeframe}.csv', index=False)
+
+            tf = ""
+            if timeframe == '1':
+                tf = 'minute'
+            elif timeframe == '60':
+                tf = 'hour'
+            elif timeframe == '1440':
+                tf = 'day'
+            else:
+                tf = ''
+            data.to_csv(f'{data_dir}/kraken_{symbol}_{tf}.csv', index=False)
     else:
         logging.critical("Did not receieve OK response from Kraken API")
 
@@ -191,20 +223,10 @@ def fetch_PRINTS_data(symbol):
     else:
         logging.critical("Did not receieve OK response from Kraken API")
 
-def fetch_ECB_data():
-    """"""
-
-    url = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.zip"
-
-    with open("/tmp/crypto_data/ecb_eurofxref.zip", 'wb') as out_file:
-        content = requests.get(url, stream=True).content
-        out_file.write(content)
-
-
 
 if __name__ == "__main__":
     # we set which pair we want to retrieve data for
         # for pair in currencies["crypto"]:
-        #     main(symbol=pair)
-
-    fetch_ECB_data()
+        #main(symbol=pair)
+    main()
+    

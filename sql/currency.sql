@@ -1,4 +1,4 @@
-INSERT INTO Currency (name, currencycode, currencytype) VALUES
+g
 ("0x","ZRX","crypto"),
 ("1inch","1INCH","crypto"),
 ("Aave","AAVE","crypto"),
